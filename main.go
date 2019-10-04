@@ -11,15 +11,21 @@ import (
 )
 
 
-type Issue struct {
-    Name          string `json:"name"`
-    Package       []string `json:"packages"`
-    Severity     string    `json:"severity"`
+type Vulnerability struct {
+    Name        string   `json:"name"`
+    Packages    []string `json:"packages"`
+    Severity    string   `json:"severity"`
+    Type        string   `json:"type"`
+    Affected    string   `json:"affected"`
+    Fixed       string   `json:"fixed"`
+    Ticket      string   `json:"ticket"`
+    Issues      []string `json:"issues"`
+    Advisories  []string `json:"advisories"`
 }
 
 
 func main() {
-    issues := getIssues()
+    vulnerabilities := getVulnerabilities()
     //cmd := exec.Command("apt", "list", "--installed")
     cmd := exec.Command("pacman", "-Q")
     cmdOutput := &bytes.Buffer{}
@@ -34,9 +40,9 @@ func main() {
         x := string(cmdOutput.Bytes())
         scanner := bufio.NewScanner(strings.NewReader(x))
         for scanner.Scan() {
-            for _, issue := range issues {
-                if strings.Contains(scanner.Text(), issue.Package[0]) {
-                    fmt.Println(issue.Severity + ": " + scanner.Text())
+            for _, vuln := range vulnerabilities {
+                if strings.Contains(scanner.Text(), vuln.Packages[0]) {
+                    fmt.Println(vuln.Severity + ": " + scanner.Text())
                 }
             }
         }
@@ -44,13 +50,13 @@ func main() {
 }
 
 
-func getIssues() []Issue {
+func getVulnerabilities() []Vulnerability {
     jsonFile, err := os.Open("v.json")
     defer jsonFile.Close()
     if err != nil {
         fmt.Println(err)
     }
-    result := make([]Issue, 0)
+    result := make([]Vulnerability, 0)
     decoder := json.NewDecoder(jsonFile)
     error_ := decoder.Decode(&result)
     if error_ != nil {

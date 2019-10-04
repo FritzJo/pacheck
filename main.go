@@ -11,7 +11,7 @@ import (
 )
 
 
-type Vulnerability struct {
+type vulnerability struct {
     Name        string   `json:"name"`
     Packages    []string `json:"packages"`
     Severity    string   `json:"severity"`
@@ -26,8 +26,7 @@ type Vulnerability struct {
 
 func main() {
     vulnerabilities := getVulnerabilities()
-    cmd := exec.Command("apt", "list", "--installed")
-    //cmd := exec.Command("pacman", "-Q")
+    cmd := exec.Command("pacman", "-Q")
     cmdOutput := &bytes.Buffer{}
     cmd.Stdout = cmdOutput
     err := cmd.Run()
@@ -52,17 +51,17 @@ func main() {
 }
 
 
-func getVulnerabilities() []Vulnerability {
+func getVulnerabilities() []vulnerability {
     jsonFile, err := os.Open("v.json")
     defer jsonFile.Close()
     if err != nil {
         fmt.Println(err)
     }
-    result := make([]Vulnerability, 0)
+    result := make([]vulnerability, 0)
     decoder := json.NewDecoder(jsonFile)
-    error_ := decoder.Decode(&result)
-    if error_ != nil {
-        fmt.Println(error_)
+    err = decoder.Decode(&result)
+    if err != nil {
+        fmt.Println(err)
     }
 
     return result

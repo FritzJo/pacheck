@@ -7,48 +7,40 @@ import (
     "os/exec"
     "strings"
     "encoding/json"
+    "bufio"
 )
 
-func main() {
-
-    issues := getIssues()
-    for _, issue := range issues {
-        fmt.Println(issue.Severity + ": " +issue.Package[0])
-    }
-
-    cmd := exec.Command("pacman", "-Q")
-    cmdOutput := &bytes.Buffer{}
-    cmd.Stdout = cmdOutput
-    printCommand(cmd)
-    err := cmd.Run()
-    printError(err)
-    printOutput(cmdOutput.Bytes())
-
-}
-
-
-func printCommand(cmd *exec.Cmd) {
-    fmt.Printf("==> Executing: %s\n", strings.Join(cmd.Args, " "))
-}
-
-
-func printError(err error) {
-    if err != nil {
-        os.Stderr.WriteString(fmt.Sprintf("==> Error: %s\n", err.Error()))
-    }
-}
-
-
-func printOutput(outs []byte) {
-    if len(outs) > 0 {
-        fmt.Printf("==> Output: %s\n", string(outs))
-    }
-}
 
 type Issue struct {
     Name          string `json:"name"`
     Package       []string `json:"packages"`
     Severity     string    `json:"severity"`
+}
+
+
+func main() {
+    issues := getIssues()
+    //cmd := exec.Command("apt", "list", "--installed")
+    cmd := exec.Command("pacman", "-Q")
+    cmdOutput := &bytes.Buffer{}
+    cmd.Stdout = cmdOutput
+    err := cmd.Run()
+
+    if err != nil {
+        fmt.Println(err)
+    }
+
+    if len(cmdOutput.Bytes())>0 {
+        x := string(cmdOutput.Bytes())
+        scanner := bufio.NewScanner(strings.NewReader(x))
+        for scanner.Scan() {
+            for _, issue := range issues {
+                if strings.Contains(scanner.Text(), issue.Package[0]) {
+                    fmt.Println(issue.Severity + ": " + scanner.Text())
+                }
+            }
+        }
+    }
 }
 
 

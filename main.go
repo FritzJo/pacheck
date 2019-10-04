@@ -3,11 +3,13 @@ package main
 import (
     "bytes"
     "fmt"
-    "os"
     "os/exec"
     "strings"
     "encoding/json"
     "bufio"
+    "log"
+    "net/http"
+    "time"
 )
 
 
@@ -52,13 +54,27 @@ func main() {
 
 
 func getVulnerabilities() []vulnerability {
-    jsonFile, err := os.Open("v.json")
-    defer jsonFile.Close()
+    url := "https://security.archlinux.org/vulnerable.json"
+    vulnClient := http.Client{
+        Timeout: time.Second * 2, // Maximum of 2 secs
+    }
+
+    req, err := http.NewRequest(http.MethodGet, url, nil)
+    if err != nil {
+        log.Fatal(err)
+    }
+
+    res, getErr := vulnClient.Do(req)
+    if getErr != nil {
+        log.Fatal(getErr)
+    }
+
     if err != nil {
         fmt.Println(err)
     }
+
     result := make([]vulnerability, 0)
-    decoder := json.NewDecoder(jsonFile)
+    decoder := json.NewDecoder(res.Body)
     err = decoder.Decode(&result)
     if err != nil {
         fmt.Println(err)

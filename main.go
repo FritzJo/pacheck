@@ -26,8 +26,8 @@ type Vulnerability struct {
 
 func main() {
     vulnerabilities := getVulnerabilities()
-    //cmd := exec.Command("apt", "list", "--installed")
-    cmd := exec.Command("pacman", "-Q")
+    cmd := exec.Command("apt", "list", "--installed")
+    //cmd := exec.Command("pacman", "-Q")
     cmdOutput := &bytes.Buffer{}
     cmd.Stdout = cmdOutput
     err := cmd.Run()
@@ -41,8 +41,10 @@ func main() {
         scanner := bufio.NewScanner(strings.NewReader(x))
         for scanner.Scan() {
             for _, vuln := range vulnerabilities {
-                if strings.Contains(scanner.Text(), vuln.Packages[0]) {
-                    fmt.Println(vuln.Severity + ": " + scanner.Text())
+                for _, pack := range vuln.Packages {
+                    if strings.Contains(scanner.Text(), pack) {
+                        fmt.Println(vuln.Severity + ": " + scanner.Text())
+                    }
                 }
             }
         }

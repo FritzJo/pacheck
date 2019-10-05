@@ -37,12 +37,17 @@ func main() {
 
 	if len(cmdOutput.Bytes()) > 0 {
 		x := string(cmdOutput.Bytes())
+
 		scanner := bufio.NewScanner(strings.NewReader(x))
 		for scanner.Scan() {
+			text := scanner.Text()
+			packagename := strings.Split(text, " ")[0]
+			packageversion := strings.Split(text, " ")[1]
+
 			for _, vuln := range vulnerabilities {
 				for _, pack := range vuln.Packages {
-					if strings.Contains(scanner.Text(), pack) {
-						fmt.Println(vuln.Severity + ": " + scanner.Text())
+					if strings.Contains(packagename, pack) && strings.Contains(packageversion, vuln.Affected) {
+						fmt.Println(vuln.Severity + ": " + packagename + " " + packageversion)
 					}
 				}
 			}

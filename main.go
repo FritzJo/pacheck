@@ -10,6 +10,7 @@ import (
 	"os/exec"
 	"strings"
 	"time"
+	"flag"
 )
 
 type vulnerability struct {
@@ -30,6 +31,9 @@ type packageinfo struct {
 }
 
 func main() {
+	quietflag := flag.Bool("q", false, "quiet: Only prints the vulnerable package name and version")
+	flag.Parse()
+
 	vulnerabilities := getVulnerabilities()
 	cmd := exec.Command("pacman", "-Q")
 
@@ -50,7 +54,7 @@ func main() {
 			packagename := strings.Split(text, " ")[0]
 			packageversion := strings.Split(text, " ")[1]
 			info := packageinfo{packagename, packageversion}
-			isVulnerable(vulnerabilities, info)
+			isVulnerable(vulnerabilities, info, *quietflag)
 		}
 	}
 }
@@ -85,11 +89,15 @@ func getVulnerabilities() []vulnerability {
 	return result
 }
 
-func isVulnerable(vulnerabilities []vulnerability, packagei packageinfo){
+func isVulnerable(vulnerabilities []vulnerability, packagei packageinfo, quiet bool){
 	for _, vuln := range vulnerabilities {
 		for _, pack := range vuln.Packages {
 			if strings.Contains(packagei.Name, pack) && strings.Contains(packagei.Version, vuln.Affected) {
-				fmt.Println(vuln.Severity + ": " + packagei.Name + " " + packagei.Version)
+				if quiet == true {
+					fmt.Println(packagei.Name + " " + vuln.Affected)
+				} else {
+					fmt.Println(vuln.Severity + ": " + packagei.Name + " " + packagei.Version)
+				}
 			}
 		}
 	}

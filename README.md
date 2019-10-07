@@ -9,8 +9,14 @@ This tool checks installed Arch packages for known vulnerabilities. The data is 
 My goal is to provide an alternative to the existing tool [arch-audit](https://github.com/ilpianista/arch-audit)
 
 ## How-To
+### Build
 ```bash
 git clone https://github.com/FritzJo/pacheck.git
 cd pacheck
-go run main.go
+go build -o pacheck main.go
+./pacheck
 ```
+### Commandline options
+|Parameter|Description|
+|---|---|
+|-q| quiet: Only prints the package name and version|

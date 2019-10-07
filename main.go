@@ -24,9 +24,15 @@ type vulnerability struct {
 	Advisories []string `json:"advisories"`
 }
 
+type packageinfo struct {
+        Name       string
+        Version    string
+}
+
 func main() {
 	vulnerabilities := getVulnerabilities()
 	cmd := exec.Command("pacman", "-Q")
+
 	cmdOutput := &bytes.Buffer{}
 	cmd.Stdout = cmdOutput
 	err := cmd.Run()
@@ -43,14 +49,8 @@ func main() {
 			text := scanner.Text()
 			packagename := strings.Split(text, " ")[0]
 			packageversion := strings.Split(text, " ")[1]
-
-			for _, vuln := range vulnerabilities {
-				for _, pack := range vuln.Packages {
-					if strings.Contains(packagename, pack) && strings.Contains(packageversion, vuln.Affected) {
-						fmt.Println(vuln.Severity + ": " + packagename + " " + packageversion)
-					}
-				}
-			}
+			info := packageinfo{packagename, packageversion}
+			isVulnerable(vulnerabilities, info)
 		}
 	}
 }
@@ -83,4 +83,14 @@ func getVulnerabilities() []vulnerability {
 	}
 
 	return result
+}
+
+func isVulnerable(vulnerabilities []vulnerability, packagei packageinfo){
+	for _, vuln := range vulnerabilities {
+		for _, pack := range vuln.Packages {
+			if strings.Contains(packagei.Name, pack) && strings.Contains(packagei.Version, vuln.Affected) {
+				fmt.Println(vuln.Severity + ": " + packagei.Name + " " + packagei.Version)
+			}
+		}
+	}
 }

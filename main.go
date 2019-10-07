@@ -4,13 +4,13 @@ import (
 	"bufio"
 	"bytes"
 	"encoding/json"
+	"flag"
 	"fmt"
 	"log"
 	"net/http"
 	"os/exec"
 	"strings"
 	"time"
-	"flag"
 )
 
 type vulnerability struct {
@@ -26,8 +26,8 @@ type vulnerability struct {
 }
 
 type packageinfo struct {
-        Name       string
-        Version    string
+	Name    string
+	Version string
 }
 
 func main() {
@@ -89,7 +89,7 @@ func getVulnerabilities() []vulnerability {
 	return result
 }
 
-func isVulnerable(vulnerabilities []vulnerability, packagei packageinfo, quiet bool){
+func isVulnerable(vulnerabilities []vulnerability, packagei packageinfo, quiet bool) {
 	for _, vuln := range vulnerabilities {
 		for _, pack := range vuln.Packages {
 			if strings.Contains(packagei.Name, pack) && strings.Contains(packagei.Version, vuln.Affected) {

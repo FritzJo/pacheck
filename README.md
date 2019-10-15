@@ -1,4 +1,4 @@
-# Pacheck (WIP)
+# Pacheck
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/0b059fc4954b406ea5c9543a73ecb234)](https://www.codacy.com/manual/fritzjo-git/pacheck?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=FritzJo/pacheck&amp;utm_campaign=Badge_Grade)
 
 ## Description
@@ -19,4 +19,5 @@ go build -o pacheck main.go
 ### Commandline options
 |Parameter|Description|
 |---|---|
-|-q| quiet: Only prints the package name and version|
+|-q| quiet: Only prints the name and version of vulnerable packages|
+|-c| cache: Use the last cached json (required if you want to use this tool offline)|

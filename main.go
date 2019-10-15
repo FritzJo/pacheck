@@ -9,7 +9,6 @@ import (
 	"log"
 	"net/http"
 	"os/exec"
-	"os"
 	"strings"
 	"time"
 	"io/ioutil"
@@ -45,7 +44,7 @@ func main() {
 	err := cmd.Run()
 
 	if err != nil {
-		fmt.Println(err)
+		log.Panic("[ERROR] Can't find pacman executable!")
 	}
 
 	if len(cmdOutput.Bytes()) > 0 {
@@ -65,19 +64,18 @@ func main() {
 func getVulnerabilities(quiet bool, cache bool) []vulnerability {
 	if cache == true {
 		if quiet == false {
-			fmt.Println("[info] Using cached json!")
+			log.Print("[INFO] Using cached json!")
 		}
 
 		data, err := ioutil.ReadFile("./vulnerable.json")
 		if err != nil {
-			fmt.Print("[error] Can't find the cached json file!\n")
-			os.Exit(1)
+			log.Panic("[ERROR] Can't find the cached json file!\n")
 		}
 
 		var cachedvuln []vulnerability
 		err = json.Unmarshal(data, &cachedvuln)
 		if err != nil {
-			fmt.Println("error:", err)
+			log.Panic("[ERROR] Error while reading cached json. The file may be damaged.")
 		}
 
 		return cachedvuln
@@ -100,19 +98,21 @@ func getVulnerabilities(quiet bool, cache bool) []vulnerability {
 		log.Fatal(getErr)
 	}
 
-	if err != nil {
-		fmt.Println(err)
-	}
 
 	result := make([]vulnerability, 0)
 	decoder := json.NewDecoder(res.Body)
 	err = decoder.Decode(&result)
 	if err != nil {
-		fmt.Println(err)
+		log.Panic("[ERROR] Can't decode the json response from " + url)
 	}
 
 	file, _ := json.MarshalIndent(result, "", " ")
-	_ = ioutil.WriteFile("vulnerable.json", file, 0644)
+	err = ioutil.WriteFile("vulnerable.json", file, 0644)
+
+	if err != nil {
+		log.Fatal("[ERROR] Can't save json response to disk. Cached version might be unavailable!")
+	}
+
 
 	return result
 }

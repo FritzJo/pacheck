@@ -9,6 +9,7 @@ import (
 	"log"
 	"net/http"
 	"os/exec"
+	"os"
 	"strings"
 	"time"
 	"io/ioutil"
@@ -33,9 +34,10 @@ type packageinfo struct {
 
 func main() {
 	quietflag := flag.Bool("q", false, "quiet: Only prints the vulnerable package name and version")
+	cacheflag := flag.Bool("c", false, "cache: use the cached json from the last request")
 	flag.Parse()
 
-	vulnerabilities := getVulnerabilities()
+	vulnerabilities := getVulnerabilities(*quietflag, *cacheflag)
 	cmd := exec.Command("pacman", "-Q")
 
 	cmdOutput := &bytes.Buffer{}
@@ -60,8 +62,30 @@ func main() {
 	}
 }
 
-func getVulnerabilities() []vulnerability {
+func getVulnerabilities(quiet bool, cache bool) []vulnerability {
+	if cache == true {
+		if quiet == false {
+			fmt.Println("[info] Using cached json!")
+		}
+
+		data, err := ioutil.ReadFile("./vulnerable.json")
+		if err != nil {
+			fmt.Print("[error] Can't find the cached json file!\n")
+			os.Exit(1)
+		}
+
+		var cachedvuln []vulnerability
+		err = json.Unmarshal(data, &cachedvuln)
+		if err != nil {
+			fmt.Println("error:", err)
+		}
+
+		return cachedvuln
+	}
+
+
 	url := "https://security.archlinux.org/vulnerable.json"
+
 	vulnClient := http.Client{
 		Timeout: time.Second * 2, // Maximum of 2 secs
 	}

@@ -11,6 +11,7 @@ import (
 	"os/exec"
 	"strings"
 	"time"
+	"io/ioutil"
 )
 
 type vulnerability struct {
@@ -85,6 +86,9 @@ func getVulnerabilities() []vulnerability {
 	if err != nil {
 		fmt.Println(err)
 	}
+
+	file, _ := json.MarshalIndent(result, "", " ")
+	_ = ioutil.WriteFile("vulnerable.json", file, 0644)
 
 	return result
 }

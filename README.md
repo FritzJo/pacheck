@@ -22,3 +22,14 @@ go build -o pacheck main.go
 |---|---|
 |-q| quiet: Only prints the name and version of vulnerable packages|
 |-c| cache: Use the last cached json (required if you want to use this tool offline)|
+
+## Example output
+```bash
+> ./pacheck
+High: inetutils 1.9.4-7 CVE-2019-0053
+Low: libmp4v2 2.0.0-5 CVE-2018-14054
+Medium: libtiff 4.0.10-1 CVE-2019-7663 CVE-2019-6128
+Low: openjpeg2 2.3.1-1 CVE-2019-6988
+High: pacman 5.1.3-1 CVE-2019-18183 CVE-2019-18182
+Low: unzip 6.0-13 CVE-2018-1000035
+```

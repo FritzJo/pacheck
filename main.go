@@ -121,7 +121,11 @@ func isVulnerable(vulnerabilities []vulnerability, packagei packageinfo, quiet b
 				if quiet == true {
 					fmt.Println(packagei.Name + " " + vuln.Affected)
 				} else {
-					fmt.Println(vuln.Severity + ": " + packagei.Name + " " + packagei.Version)
+					fmt.Print(vuln.Severity + ": " + packagei.Name + " " + packagei.Version + " ")
+					for _, cve := range vuln.Issues {
+						fmt.Print(cve + " ")
+					}
+					fmt.Println()
 				}
 			}
 		}

@@ -6,12 +6,12 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"os/exec"
 	"strings"
 	"time"
-	"io/ioutil"
 )
 
 type vulnerability struct {
@@ -81,7 +81,6 @@ func getVulnerabilities(quiet bool, cache bool) []vulnerability {
 		return cachedvuln
 	}
 
-
 	url := "https://security.archlinux.org/vulnerable.json"
 
 	vulnClient := http.Client{
@@ -98,7 +97,6 @@ func getVulnerabilities(quiet bool, cache bool) []vulnerability {
 		log.Fatal(getErr)
 	}
 
-
 	result := make([]vulnerability, 0)
 	decoder := json.NewDecoder(res.Body)
 	err = decoder.Decode(&result)
@@ -112,7 +110,6 @@ func getVulnerabilities(quiet bool, cache bool) []vulnerability {
 	if err != nil {
 		log.Fatal("[ERROR] Can't save json response to disk. Cached version might be unavailable!")
 	}
-
 
 	return result
 }

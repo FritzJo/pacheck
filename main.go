@@ -62,6 +62,7 @@ func main() {
 }
 
 func getVulnerabilities(quiet bool, cache bool) []vulnerability {
+	// Determine datasource (local cache, or web)
 	if cache == true {
 		if quiet == false {
 			log.Print("[INFO] Using cached json!")
@@ -81,6 +82,7 @@ func getVulnerabilities(quiet bool, cache bool) []vulnerability {
 		return cachedvuln
 	}
 
+	// Fetch newest json
 	url := "https://security.archlinux.org/vulnerable.json"
 
 	vulnClient := http.Client{
@@ -115,8 +117,10 @@ func getVulnerabilities(quiet bool, cache bool) []vulnerability {
 }
 
 func isVulnerable(vulnerabilities []vulnerability, packagei packageinfo, quiet bool) {
+	// Iterate over all vulnerabilities of the loaded json
 	for _, vuln := range vulnerabilities {
 		for _, pack := range vuln.Packages {
+			// A package is affected, when name and version match
 			if strings.Contains(packagei.Name, pack) && strings.Contains(packagei.Version, vuln.Affected) {
 				if quiet == true {
 					fmt.Println(packagei.Name + " " + vuln.Affected)

@@ -41,29 +41,37 @@ func main() {
 		fetchJson()
 	} else {
 		vulnerabilities := getVulnerabilities(*quietflag, *cacheflag)
-		cmd := exec.Command("pacman", "-Q")
-
-		cmdOutput := &bytes.Buffer{}
-		cmd.Stdout = cmdOutput
-		err := cmd.Run()
-
-		if err != nil {
-			log.Panic("[ERROR] Can't find pacman executable!")
-		}
-
-		if len(cmdOutput.Bytes()) > 0 {
-			x := string(cmdOutput.Bytes())
-
-			scanner := bufio.NewScanner(strings.NewReader(x))
-			for scanner.Scan() {
-				text := scanner.Text()
-				packagename := strings.Split(text, " ")[0]
-				packageversion := strings.Split(text, " ")[1]
-				info := packageinfo{packagename, packageversion}
-				isVulnerable(vulnerabilities, info, *quietflag)
-			}
+		packages := getInstalledPackages()
+		for _, info := range packages {
+			isVulnerable(vulnerabilities, info, *quietflag)
 		}
 	}
+}
+
+func getInstalledPackages() []packageinfo {
+	cmd := exec.Command("pacman", "-Q")
+
+	cmdOutput := &bytes.Buffer{}
+	cmd.Stdout = cmdOutput
+	err := cmd.Run()
+
+	if err != nil {
+		log.Panic("[ERROR] Can't find pacman executable!")
+	}
+
+	info := []packageinfo{}
+	if len(cmdOutput.Bytes()) > 0 {
+		x := string(cmdOutput.Bytes())
+
+		scanner := bufio.NewScanner(strings.NewReader(x))
+		for scanner.Scan() {
+			text := scanner.Text()
+			packagename := strings.Split(text, " ")[0]
+			packageversion := strings.Split(text, " ")[1]
+			info = append(info, packageinfo{packagename, packageversion})
+		}
+	}
+	return info
 }
 
 func getVulnerabilities(quiet bool, cache bool) []vulnerability {

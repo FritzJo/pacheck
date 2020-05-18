@@ -34,29 +34,34 @@ type packageinfo struct {
 func main() {
 	quietflag := flag.Bool("q", false, "quiet: Only prints the vulnerable package name and version")
 	cacheflag := flag.Bool("c", false, "cache: use the cached json from the last request")
+	updateflag := flag.Bool("u", false, "update: fetch the latest json, but don't scan packages")
 	flag.Parse()
 
-	vulnerabilities := getVulnerabilities(*quietflag, *cacheflag)
-	cmd := exec.Command("pacman", "-Q")
+	if *updateflag {
+		fetchJson()
+	} else {
+		vulnerabilities := getVulnerabilities(*quietflag, *cacheflag)
+		cmd := exec.Command("pacman", "-Q")
 
-	cmdOutput := &bytes.Buffer{}
-	cmd.Stdout = cmdOutput
-	err := cmd.Run()
+		cmdOutput := &bytes.Buffer{}
+		cmd.Stdout = cmdOutput
+		err := cmd.Run()
 
-	if err != nil {
-		log.Panic("[ERROR] Can't find pacman executable!")
-	}
+		if err != nil {
+			log.Panic("[ERROR] Can't find pacman executable!")
+		}
 
-	if len(cmdOutput.Bytes()) > 0 {
-		x := string(cmdOutput.Bytes())
+		if len(cmdOutput.Bytes()) > 0 {
+			x := string(cmdOutput.Bytes())
 
-		scanner := bufio.NewScanner(strings.NewReader(x))
-		for scanner.Scan() {
-			text := scanner.Text()
-			packagename := strings.Split(text, " ")[0]
-			packageversion := strings.Split(text, " ")[1]
-			info := packageinfo{packagename, packageversion}
-			isVulnerable(vulnerabilities, info, *quietflag)
+			scanner := bufio.NewScanner(strings.NewReader(x))
+			for scanner.Scan() {
+				text := scanner.Text()
+				packagename := strings.Split(text, " ")[0]
+				packageversion := strings.Split(text, " ")[1]
+				info := packageinfo{packagename, packageversion}
+				isVulnerable(vulnerabilities, info, *quietflag)
+			}
 		}
 	}
 }
@@ -80,8 +85,33 @@ func getVulnerabilities(quiet bool, cache bool) []vulnerability {
 		}
 
 		return cachedvuln
+	} else {
+		result := fetchJson()
+		return result
 	}
+}
 
+func isVulnerable(vulnerabilities []vulnerability, packagei packageinfo, quiet bool) {
+	// Iterate over all vulnerabilities of the loaded json
+	for _, vuln := range vulnerabilities {
+		for _, pack := range vuln.Packages {
+			// A package is affected, when name and version match
+			if strings.Contains(packagei.Name, pack) && strings.Contains(packagei.Version, vuln.Affected) {
+				if quiet == true {
+					fmt.Println(packagei.Name + " " + vuln.Affected)
+				} else {
+					fmt.Print(vuln.Severity + ": " + packagei.Name + " " + packagei.Version + " ")
+					for _, cve := range vuln.Issues {
+						fmt.Print(cve + " ")
+					}
+					fmt.Println()
+				}
+			}
+		}
+	}
+}
+
+func fetchJson() []vulnerability {
 	// Fetch newest json
 	url := "https://security.archlinux.org/vulnerable.json"
 
@@ -109,29 +139,5 @@ func getVulnerabilities(quiet bool, cache bool) []vulnerability {
 	file, _ := json.MarshalIndent(result, "", " ")
 	err = ioutil.WriteFile("vulnerable.json", file, 0644)
 
-	if err != nil {
-		log.Fatal("[ERROR] Can't save json response to disk. Cached version might be unavailable!")
-	}
-
 	return result
-}
-
-func isVulnerable(vulnerabilities []vulnerability, packagei packageinfo, quiet bool) {
-	// Iterate over all vulnerabilities of the loaded json
-	for _, vuln := range vulnerabilities {
-		for _, pack := range vuln.Packages {
-			// A package is affected, when name and version match
-			if strings.Contains(packagei.Name, pack) && strings.Contains(packagei.Version, vuln.Affected) {
-				if quiet == true {
-					fmt.Println(packagei.Name + " " + vuln.Affected)
-				} else {
-					fmt.Print(vuln.Severity + ": " + packagei.Name + " " + packagei.Version + " ")
-					for _, cve := range vuln.Issues {
-						fmt.Print(cve + " ")
-					}
-					fmt.Println()
-				}
-			}
-		}
-	}
 }

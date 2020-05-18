@@ -9,14 +9,26 @@ This tool checks installed Arch packages for known vulnerabilities. The data is 
 
 My goal is to provide an alternative to the existing tool [arch-audit](https://github.com/ilpianista/arch-audit)
 
+## Requirements
+* Arch Linux (pacman)
+* Go v1.14 (build only)
+
 ## How-To
+### Install
+```bash
+git clone https://github.com/FritzJo/pacheck.git
+cd pacheck
+sudo make install
+```
+
 ### Build
 ```bash
 git clone https://github.com/FritzJo/pacheck.git
 cd pacheck
-go build -o pacheck main.go
-./pacheck
+make build
+./bin/pacheck
 ```
+
 ### Commandline options
 |Parameter|Description|
 |---|---|
@@ -26,7 +38,7 @@ go build -o pacheck main.go
 
 ## Example output
 ```bash
-> ./pacheck
+> pacheck
 High: inetutils 1.9.4-7 CVE-2019-0053
 Low: libmp4v2 2.0.0-5 CVE-2018-14054
 Medium: libtiff 4.0.10-1 CVE-2019-7663 CVE-2019-6128

@@ -34,7 +34,7 @@ make build
 |---|---|
 |-q| quiet: Only prints the name and version of vulnerable packages|
 |-c| cache: Use the last cached json (required if you want to use this tool offline)|
-|-u| uodate: Fetch the latest json without scanning any packages|
+|-u| update: Fetch the latest json without scanning any packages|
 
 ## Example output
 ```bash

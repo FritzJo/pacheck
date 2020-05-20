@@ -46,3 +46,8 @@ Low: openjpeg2 2.3.1-1 CVE-2019-6988
 High: pacman 5.1.3-1 CVE-2019-18183 CVE-2019-18182
 Low: unzip 6.0-13 CVE-2018-1000035
 ```
+## Roadmap
+* Code improvements
+  * Better error handling
+  * Improve performance
+* Implement most features of arch-audit

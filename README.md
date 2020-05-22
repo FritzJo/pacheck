@@ -48,6 +48,6 @@ Low: unzip 6.0-13 CVE-2018-1000035
 ```
 ## Roadmap
 * Code improvements
-  * Better error handling
   * Improve performance
+  * Add more comments
 * Implement most features of arch-audit

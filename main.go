@@ -55,7 +55,7 @@ func getInstalledPackages() []packageinfo {
 	cmd.Stdout = cmdOutput
 	err := cmd.Run()
 
-	checkWithMessage(err, "[ERROR] Can't find pacman executable!")
+	check(err, "[ERROR] Can't find pacman executable!")
 
 	info := []packageinfo{}
 	if len(cmdOutput.Bytes()) > 0 {
@@ -80,11 +80,11 @@ func getVulnerabilities(quiet bool, cache bool) []vulnerability {
 		}
 
 		data, err := ioutil.ReadFile("./vulnerable.json")
-		checkWithMessage(err, "[ERROR] Can't find the cached json file!\n")
+		check(err, "[ERROR] Can't find the cached json file!\n")
 
 		var cachedvuln []vulnerability
 		err = json.Unmarshal(data, &cachedvuln)
-		checkWithMessage(err, "[ERROR] Error while reading cached json. The file may be damaged.")
+		check(err, "[ERROR] Error while reading cached json. The file may be damaged.")
 
 		return cachedvuln
 	} else {
@@ -122,15 +122,15 @@ func fetchJson() []vulnerability {
 	}
 
 	req, err := http.NewRequest(http.MethodGet, url, nil)
-	check(err)
+	check(err, "[Error] Can't create new request.")
 
 	res, err := vulnClient.Do(req)
-	check(err)
+	check(err, "[Error] Can't execute http request")
 
 	result := make([]vulnerability, 0)
 	decoder := json.NewDecoder(res.Body)
 	err = decoder.Decode(&result)
-	checkWithMessage(err, "[ERROR] Can't decode the json response from "+url)
+	check(err, "[ERROR] Can't decode the json response from "+url)
 
 	file, _ := json.MarshalIndent(result, "", " ")
 	err = ioutil.WriteFile("vulnerable.json", file, 0644)
@@ -138,13 +138,7 @@ func fetchJson() []vulnerability {
 	return result
 }
 
-func check(err error) {
-	if err != nil {
-		log.Fatal(err)
-	}
-}
-
-func checkWithMessage(err error, message string) {
+func check(err error, message string) {
 	if err != nil {
 		log.Fatal(message)
 	}

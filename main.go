@@ -39,22 +39,20 @@ func main() {
 
 	if *updateflag {
 		fetchJson()
-	} else {
-		vulnerabilities := getVulnerabilities(*quietflag, *cacheflag)
-		packages := getInstalledPackages()
-		for _, info := range packages {
-			isVulnerable(vulnerabilities, info, *quietflag)
-		}
+		return
+	}
+	vulnerabilities := getVulnerabilities(*quietflag, *cacheflag)
+	packages := getInstalledPackages()
+	for _, info := range packages {
+		isVulnerable(vulnerabilities, info, *quietflag)
 	}
 }
 
 func getInstalledPackages() []packageinfo {
 	cmd := exec.Command("pacman", "-Q")
-
 	cmdOutput := &bytes.Buffer{}
 	cmd.Stdout = cmdOutput
 	err := cmd.Run()
-
 	check(err, "[ERROR] Can't find pacman executable!")
 
 	info := []packageinfo{}
@@ -74,23 +72,21 @@ func getInstalledPackages() []packageinfo {
 
 func getVulnerabilities(quiet bool, cache bool) []vulnerability {
 	// Determine datasource (local cache, or web)
-	if cache == true {
-		if quiet == false {
-			log.Print("[INFO] Using cached json!")
-		}
-
-		data, err := ioutil.ReadFile("./vulnerable.json")
-		check(err, "[ERROR] Can't find the cached json file!\n")
-
-		var cachedvuln []vulnerability
-		err = json.Unmarshal(data, &cachedvuln)
-		check(err, "[ERROR] Error while reading cached json. The file may be damaged.")
-
-		return cachedvuln
-	} else {
-		result := fetchJson()
-		return result
+	if !cache {
+		return fetchJson()
 	}
+	if !quiet {
+		log.Print("[INFO] Using cached json!")
+	}
+
+	data, err := ioutil.ReadFile("./vulnerable.json")
+	check(err, "[ERROR] Can't find the cached json file!\n")
+
+	var cachedvuln []vulnerability
+	err = json.Unmarshal(data, &cachedvuln)
+	check(err, "[ERROR] Error while reading cached json. The file may be damaged.")
+
+	return cachedvuln
 }
 
 func isVulnerable(vulnerabilities []vulnerability, packagei packageinfo, quiet bool) {
@@ -98,17 +94,18 @@ func isVulnerable(vulnerabilities []vulnerability, packagei packageinfo, quiet b
 	for _, vuln := range vulnerabilities {
 		for _, pack := range vuln.Packages {
 			// A package is affected, when name and version match
-			if strings.Contains(packagei.Name, pack) && strings.Contains(packagei.Version, vuln.Affected) {
-				if quiet == true {
-					fmt.Println(packagei.Name + " " + vuln.Affected)
-				} else {
-					fmt.Print(vuln.Severity + ": " + packagei.Name + " " + packagei.Version + " ")
-					for _, cve := range vuln.Issues {
-						fmt.Print(cve + " ")
-					}
-					fmt.Println()
-				}
+			if !strings.Contains(packagei.Name, pack) || !strings.Contains(packagei.Version, vuln.Affected) {
+				continue
 			}
+			if quiet == true {
+				fmt.Println(packagei.Name + " " + vuln.Affected)
+				continue
+			}
+			fmt.Print(vuln.Severity + ": " + packagei.Name + " " + packagei.Version + " ")
+			for _, cve := range vuln.Issues {
+				fmt.Print(cve + " ")
+			}
+			fmt.Println()
 		}
 	}
 }
@@ -134,6 +131,7 @@ func fetchJson() []vulnerability {
 
 	file, _ := json.MarshalIndent(result, "", " ")
 	err = ioutil.WriteFile("vulnerable.json", file, 0644)
+	check(err, "[ERROR] Can't write vulnerable.json file")
 
 	return result
 }

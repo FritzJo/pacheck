@@ -1,4 +1,5 @@
 # Pacheck
+![pacheck logo](doc/images/logo.png "Pacheck application logo")
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/0b059fc4954b406ea5c9543a73ecb234)](https://www.codacy.com/manual/fritzjo-git/pacheck?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=FritzJo/pacheck&amp;utm_campaign=Badge_Grade)
 

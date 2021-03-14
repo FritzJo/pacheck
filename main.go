@@ -2,7 +2,7 @@ package main
 
 import (
 	"flag"
-	"pacheck/modules"
+	m "pacheck/modules"
 )
 
 func main() {
@@ -11,17 +11,20 @@ func main() {
 	updateflag := flag.Bool("u", false, "update: fetch the latest json, but don't scan packages")
 	flag.Parse()
 
-	if !modules.PacmanInstalled() {
+	if !m.PacmanInstalled() {
 		panic("[ERROR] Pacman not installed or not available!\nPlease make sure that everything is correctly set up.")
 	}
 
 	if *updateflag {
-		modules.FetchJson()
+		m.FetchJson()
 		return
 	}
-	vulnerabilities := modules.GetVulnerabilities(*quietflag, *cacheflag)
-	packages := modules.GetInstalledPackages()
+	vulnerabilities := m.GetVulnerabilities(*quietflag, *cacheflag)
+	packages := m.GetInstalledPackages()
 	for _, info := range packages {
-		modules.IsVulnerable(vulnerabilities, info, *quietflag)
+		isVuln, vulns := m.IsVulnerable(vulnerabilities, info)
+		if isVuln {
+			m.PrintVulnerablePackage(info, vulns, *quietflag)
+		}
 	}
 }

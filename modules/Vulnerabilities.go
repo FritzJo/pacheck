@@ -2,7 +2,6 @@ package modules
 
 import (
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -20,6 +19,11 @@ type Vulnerability struct {
 	Ticket     string   `json:"ticket"`
 	Issues     []string `json:"issues"`
 	Advisories []string `json:"advisories"`
+}
+
+type VulnerablePackage struct {
+	Vuln     Vulnerability
+	Packagei Packageinfo
 }
 
 func GetVulnerabilities(quiet bool, cache bool) []Vulnerability {
@@ -41,25 +45,20 @@ func GetVulnerabilities(quiet bool, cache bool) []Vulnerability {
 	return cachedvuln
 }
 
-func IsVulnerable(vulnerabilities []Vulnerability, packagei Packageinfo, quiet bool) {
+func IsVulnerable(vulnerabilities []Vulnerability, packageInfo Packageinfo) (bool, []Vulnerability) {
+	var affectedVulnerabilities []Vulnerability
 	// Iterate over all vulnerabilities of the loaded json
 	for _, vuln := range vulnerabilities {
 		for _, pack := range vuln.Packages {
 			// A package is affected, when name and version match
-			if !strings.Contains(packagei.Name, pack) || !strings.Contains(packagei.Version, vuln.Affected) {
+			if !strings.Contains(packageInfo.Name, pack) || !strings.Contains(packageInfo.Version, vuln.Affected) {
 				continue
 			}
-			if quiet == true {
-				fmt.Println(packagei.Name + " " + vuln.Affected)
-				continue
-			}
-			fmt.Print(vuln.Severity + ": " + packagei.Name + " " + packagei.Version + " ")
-			for _, cve := range vuln.Issues {
-				fmt.Print(cve + " ")
-			}
-			fmt.Println()
+			affectedVulnerabilities = append(affectedVulnerabilities, vuln)
 		}
 	}
+	resultFound := len(affectedVulnerabilities) > 0
+	return resultFound, affectedVulnerabilities
 }
 
 func FetchJson() []Vulnerability {

@@ -37,6 +37,10 @@ func main() {
 	updateflag := flag.Bool("u", false, "update: fetch the latest json, but don't scan packages")
 	flag.Parse()
 
+	if !pacmanInstalled() {
+		panic("[ERROR] Pacman not installed or not available!\nPlease make sure that everything is correctly set up.")
+	}
+
 	if *updateflag {
 		fetchJson()
 		return
@@ -134,6 +138,18 @@ func fetchJson() []vulnerability {
 	check(err, "[ERROR] Can't write vulnerable.json file")
 
 	return result
+}
+
+func pacmanInstalled() bool {
+	fmt.Println("Test")
+	cmd := exec.Command("pacman")
+	cmdOutput := &bytes.Buffer{}
+	cmd.Stdout = cmdOutput
+	err := cmd.Run()
+	if err != nil {
+		return false
+	}
+	return true
 }
 
 func check(err error, message string) {

@@ -8,7 +8,6 @@ import (
 )
 
 func PacmanInstalled() bool {
-	fmt.Println("Test")
 	cmd := exec.Command("pacman")
 	cmdOutput := &bytes.Buffer{}
 	cmd.Stdout = cmdOutput

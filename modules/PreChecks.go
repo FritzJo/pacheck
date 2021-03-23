@@ -1,18 +1,13 @@
 package modules
 
 import (
-	"bytes"
-	"fmt"
 	"log"
 	"os/exec"
 )
 
 func PacmanInstalled() bool {
-	cmd := exec.Command("pacman")
-	cmdOutput := &bytes.Buffer{}
-	cmd.Stdout = cmdOutput
-	err := cmd.Run()
-	if err != nil {
+	cmd := exec.Command("pacman", "-h")
+	if err := cmd.Run(); err != nil {
 		return false
 	}
 	return true
